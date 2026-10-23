@@ -30,3 +30,9 @@ flow/
 data/AtPolyDB_GWASFlow_Test/run/
 data/AtPolyDB_GWASFlow_Test/data/full/
 .DS_Store
+
+# AtPolyDB 原始下载数据（download_atpolydb.sh 可再取，SHA256SUMS 锁定）
+data/AtPolyDB_GWASFlow_Test/data/raw/
+# PLINK 转换副产物（日志与 nosex，不入库）
+data/AtPolyDB_GWASFlow_Test/data/smoke/genotype.log
+data/AtPolyDB_GWASFlow_Test/data/smoke/genotype.nosex

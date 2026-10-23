@@ -1,0 +1,68 @@
+# AtPolyDB（拟南芥 TAIR9）完整 SNP 集 → GWASFlow BED 路线配置
+#
+# 由 analysisyaml.atpolydb_smoke.yaml 派生（L5 加严：~214k SNP 完整集）：
+#   - 输入路径指向 data/full（--snp-step 1 生成的完整集）
+#   - 工作区独立（01.workflow_full / 02.data_deliver_full），不覆盖 smoke 产物
+#
+# 前置（见 docs/ATPOLYDB_TEST_GUIDE.md §4 Step 6）：
+#   bash data/AtPolyDB_GWASFlow_Test/download_atpolydb.sh data/AtPolyDB_GWASFlow_Test/data/raw
+#   .testenv/bin/python data/AtPolyDB_GWASFlow_Test/prepare_atpolydb.py \
+#       --archive data/AtPolyDB_GWASFlow_Test/data/raw/call_method_75.tar.gz \
+#       --phenotypes data/AtPolyDB_GWASFlow_Test/data/raw/phenotype_published_raw.tsv \
+#       --trait 5_FT10 --trait-name FT10 --snp-step 1 \
+#       --out-dir data/AtPolyDB_GWASFlow_Test/data/full
+#   (cd data/AtPolyDB_GWASFlow_Test && bash make_plink.sh data/full)
+#   bash tests/atpolydb/prepare_inputs.sh --full
+
+project_name: atpolydb_tair9_full
+Genome_Version: TAIR9
+species: Arabidopsis_thaliana
+
+# ---- 输入（本机绝对路径；部署时替换）----
+sample_csv: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/full/samples.csv
+phenotypes_tsv: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/full/phenotypes.tsv
+traits_tsv: /home/zj/pipeline/GWASFlow/tests/atpolydb/traits.tsv
+covariates_tsv: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/full/covariates.tsv   # 占位（FT10 无协变量声明，不消费）
+expected_checksums_tsv: ""
+checksum_mode: auto                  # 无 MD5 基线 → 门控 baseline_only（数据包用 SHA256SUMS 独立校验）
+
+# ---- 基因型：BED 路线 ----
+genotype_format: bed
+genotype_input: ""
+genotype_bfile: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/full/genotype
+input_variant_map: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/full/variant_map.tsv
+
+# ---- 工作区（独立于 smoke；产物目录被 .gitignore 排除）----
+workflow: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/run/01.workflow_full
+data_deliver: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/run/02.data_deliver_full
+
+execution_mode: local
+queue_id: ""
+
+# ---- 参考资源（TAIR9；BED 路线按需：FASTA/重命名映射不需要）----
+can_use_genome_version:
+  - TAIR9
+GWAS_reference:
+  TAIR9:
+    genome_fasta: ""                 # BED 路线不需要（按需校验已 discard）
+    genome_fai: ""
+    chromosome_table: /home/zj/pipeline/GWASFlow/tests/atpolydb/chromosome_table.tair9.tsv
+    chromosome_rename_map: ""        # BED 路线 BIM 已是数值染色体
+    gff3: ""                         # candidate_genes=false 时不校验；启用须配 TAIR9 注释（不得混用 TAIR10/生菜）
+    function_table: ""
+
+# ---- 模块开关（默认全开基础上按数据现实调整）----
+candidate_genes: false               # 诚实关闭：本包未提供 TAIR9 GFF3；接入注释后再启用
+report: false                        # M6：渲染器未验收
+
+# ---- 参数覆盖（单位契约见 docs/SCRIPT_PARAMETERS.md §10）----
+parameter:
+  qc:
+    chr_count: 5                     # 拟南芥常染色体 1–5
+    mind: 0.10
+    geno: 0.10
+    maf: 0.05
+    mac: 5
+  multiple_testing:
+    alpha: "0.05"
+    family_size: 1
