@@ -311,11 +311,12 @@ def run_qc(args, out_dir):
 def run_structure(args, out_dir):
     log_path = out_dir / "plink2.log"
 
-    # 1. LD 剪枝（--indep-pairwise 窗口 kb 步长 标记数 r2）
+    # 1. LD 剪枝（--indep-pairwise 物理窗口 kb；plink2 约束：kb 窗口 step 必须为 1，
+    #    故不传 step 用 plink2 默认值，配置 prune_step 仅适用标记数窗口模式）
     prune_prefix = out_dir / "pca_prune"
     code = run_plink2(
         ["--bfile", args.bfile, "--indep-pairwise",
-         str(args.prune_window_kb), "kb", str(args.prune_step), str(args.prune_r2),
+         f"{args.prune_window_kb}kb", str(args.prune_r2),
          *chr_set_args(args.chr_count),
          "--out", str(prune_prefix)],
         log_path, args.threads, args.memory_mb,
@@ -355,7 +356,8 @@ def run_structure(args, out_dir):
             json.dump({
                 "schema": "gwasflow.structure_audit.v1",
                 "prune_params": {
-                    "window_kb": args.prune_window_kb, "step": args.prune_step,
+                    "window_kb": args.prune_window_kb, "step": 1,
+                    "step_note": "plink2 kb 窗口强制 step=1（配置 prune_step 仅适用标记数窗口模式）",
                     "r2": args.prune_r2,
                 },
                 "n_prune_in": n_pruned_in, "n_prune_out": n_pruned_out,
@@ -384,7 +386,8 @@ def run_structure(args, out_dir):
         json.dump({
             "schema": "gwasflow.structure_audit.v1",
             "prune_params": {
-                "window_kb": args.prune_window_kb, "step": args.prune_step,
+                "window_kb": args.prune_window_kb, "step": 1,
+                "step_note": "plink2 kb 窗口强制 step=1（配置 prune_step 仅适用标记数窗口模式）",
                 "r2": args.prune_r2,
             },
             "pca_params": {"components": args.pca_components, "scols": "fid",

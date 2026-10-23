@@ -6,4 +6,4 @@ channels:
   - conda-forge
 dependencies:
   - python>=3.10,<3.15
-  - plink2>=2.0
+  - plink2                # bioconda 版本号为 2.00aX 预发布格式（conda 语义 < 2.0），无下界约束

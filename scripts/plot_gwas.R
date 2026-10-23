@@ -103,9 +103,9 @@ main <- function() {
     if (is.na(chr)) return(NA)
     offsets[chr] + plot_data$pos_num[i]
   })
-  chrom_midpoints <- sapply(chrom_order, function(chr) {
-    (offsets[chr] + offsets[chr + 1]) / 2
-  })
+  chrom_midpoints <- vapply(seq_along(chrom_order), function(i) {
+    (offsets[i] + offsets[i + 1]) / 2
+  }, numeric(1))
 
   # ---- 曼哈顿图 ----
   manhattan <- ggplot(

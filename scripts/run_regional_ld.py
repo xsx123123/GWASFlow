@@ -118,8 +118,12 @@ def main(argv=None):
             status_rows.append([locus["locus_id"], "skipped", "染色体无法转引擎数值"])
             continue
         region_prefix = out_dir / f"region_{locus['locus_id']}"
-        # metric=r2 → --r2（成对 r2）；dprime → --r2 dprime（图和数据一致）
-        r2_args = ["--r2"] if args.metric == "r2" else ["--r2", "dprime"]
+        # plink2 ≥2.0.0-a.7: --r2 已拆分——r2-unphased=PLINK 1.x 经典 r²（无相位剂量），
+        # dprime 由 --r2-phased cols=+dprimeabs 输出（PLINK 1.9 --r2 dprime 等价）
+        if args.metric == "r2":
+            r2_args = ["--r2-unphased"]
+        else:
+            r2_args = ["--r2-phased", "cols=+dprimeabs"]
         argv_cmd = [
             "plink2", "--bfile", args.bfile,
             "--keep", args.keep,
@@ -145,20 +149,31 @@ def main(argv=None):
             ])
             continue
 
-        ld_file = region_prefix.with_suffix(".ld")
+        ld_file = region_prefix.with_suffix(".vcor")
         n_pairs = 0
         if ld_file.exists():
+            # plink2 .vcor 列（# 表头）: CHROM_A POS_A ID_A CHROM_B POS_B ID_B
+            # [+ UNPHASED_R2 | PHASED_R2 (+ ABS_DPRIME)]；按表头列名定位
+            value_cols = (("ABS_DPRIME",) if args.metric == "dprime"
+                          else ("UNPHASED_R2", "PHASED_R2", "R2"))
             with open(ld_file, encoding="utf-8") as handle:
+                header = None
                 for line in handle:
-                    if line.startswith("#") or not line.strip():
+                    if line.startswith("#"):
+                        header = line.lstrip("#").strip().split()
+                        continue
+                    if not line.strip() or header is None:
                         continue
                     parts = line.split()
-                    # plink2 --r2 .ld 列: CHR_A SNP_A CHR_B SNP_B R2（dprime 时末列 Dprime）
-                    if len(parts) >= 5:
-                        value = parts[4]
+                    if len(parts) < len(header):
+                        continue
+                    rec = dict(zip(header, parts))
+                    id_a, id_b = rec.get("ID_A", ""), rec.get("ID_B", "")
+                    value = next((rec[c] for c in value_cols if c in rec), "")
+                    if id_a and id_b and value:
                         ld_rows.append([
                             locus["locus_id"], locus["chrom"],
-                            parts[1], parts[3], value,
+                            id_a, id_b, value,
                             locus["start"], locus["end"],
                         ])
                         n_pairs += 1

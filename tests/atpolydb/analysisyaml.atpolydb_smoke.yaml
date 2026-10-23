@@ -13,22 +13,22 @@ Genome_Version: TAIR9
 species: Arabidopsis_thaliana
 
 # ---- 输入（本机绝对路径；部署时替换）----
-sample_csv: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/samples.csv
-phenotypes_tsv: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/phenotypes.tsv
-traits_tsv: /Users/zj/zj_code/GWASFlow/tests/atpolydb/traits.tsv
-covariates_tsv: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/covariates.tsv   # 占位（FT10 无协变量声明，不消费）
+sample_csv: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/samples.csv
+phenotypes_tsv: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/phenotypes.tsv
+traits_tsv: /home/zj/pipeline/GWASFlow/tests/atpolydb/traits.tsv
+covariates_tsv: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/covariates.tsv   # 占位（FT10 无协变量声明，不消费）
 expected_checksums_tsv: ""
 checksum_mode: auto                  # 无 MD5 基线 → 门控 baseline_only（数据包用 SHA256SUMS 独立校验）
 
 # ---- 基因型：BED 路线 ----
 genotype_format: bed
 genotype_input: ""
-genotype_bfile: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/genotype
-input_variant_map: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/variant_map.tsv
+genotype_bfile: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/genotype
+input_variant_map: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/variant_map.tsv
 
 # ---- 工作区（独立于数据目录；产物目录被 .gitignore 排除）----
-workflow: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/run/01.workflow
-data_deliver: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/run/02.data_deliver
+workflow: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/run/01.workflow
+data_deliver: /home/zj/pipeline/GWASFlow/data/AtPolyDB_GWASFlow_Test/run/02.data_deliver
 
 execution_mode: local
 queue_id: ""
@@ -40,7 +40,7 @@ GWAS_reference:
   TAIR9:
     genome_fasta: ""                 # BED 路线不需要（按需校验已 discard）
     genome_fai: ""
-    chromosome_table: /Users/zj/zj_code/GWASFlow/tests/atpolydb/chromosome_table.tair9.tsv
+    chromosome_table: /home/zj/pipeline/GWASFlow/tests/atpolydb/chromosome_table.tair9.tsv
     chromosome_rename_map: ""        # BED 路线 BIM 已是数值染色体
     gff3: ""                         # candidate_genes=false 时不校验；启用须配 TAIR9 注释（不得混用 TAIR10/生菜）
     function_table: ""

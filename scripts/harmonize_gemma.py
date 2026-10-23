@@ -280,7 +280,8 @@ def main(argv=None):
         rs = row.get("rs") or row.get("SNP") or ""
         chrom_raw = row.get("chr") or row.get("CHR") or ""
         a1 = (row.get("allele1") or row.get("A1") or "").upper()
-        a2 = (row.get("allele2") or row.get("A2") or "").upper()
+        # GEMMA assoc.txt 第二等位基因列名为 allele0（0.98.x 实测），兼容 allele2 命名
+        a2 = (row.get("allele0") or row.get("allele2") or row.get("A2") or "").upper()
 
         entry = variant_map.get(rs)
         if entry is None:

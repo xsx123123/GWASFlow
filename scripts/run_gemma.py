@@ -196,7 +196,7 @@ def main(argv=None):
 
     # ---- 原始输出归档（按检验类型重命名；all 时三件独立归档）----
     assoc_outputs = {}
-    _empty_header = ("chr\trs\tn_miss\tn_obs\tallele1\tallele2\taf"
+    _empty_header = ("chr\trs\tps\tn_miss\tallele1\tallele0\taf"
                      "\tbeta\tse\tlogl_H1\tl_remle\tp_wald\n")
     expected_files = {
         "wald": [f"{gemma_prefix.name}.assoc.txt"],

@@ -36,8 +36,10 @@ main <- function() {
 
   # ---- PCA 图（项目级）----
   if (!is.null(args$pcs) && file.exists(args$pcs)) {
-    pca <- read.table(args$pcs, header = TRUE, comment.char = "#",
-                      stringsAsFactors = FALSE)
+    # plink2 pca.eigenvec 头行带 '#' 前缀（#FID IID PC1...）：
+    # comment.char 必须置空，否则表头整行被吞、PC 列无法识别（PCA 图静默跳过）
+    pca <- read.table(args$pcs, header = TRUE, comment.char = "",
+                      stringsAsFactors = FALSE, check.names = FALSE)
     colnames(pca)[1:2] <- c("FID", "IID")
     pc_cols <- grep("^PC", colnames(pca), value = TRUE)
     if (length(pc_cols) >= 2) {

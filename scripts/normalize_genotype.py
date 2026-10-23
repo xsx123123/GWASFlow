@@ -44,6 +44,8 @@ def parse_args(argv=None):
     parser.add_argument("--genotype-format", required=True, choices=["vcf", "bcf", "bed"])
     parser.add_argument("--input", default=None, help="VCF/BCF 文件路径")
     parser.add_argument("--bfile", default=None, help="BED 前缀（不含 .bed/.bim/.fam）")
+    parser.add_argument("--input-variant-map", default=None,
+                        help="BED 路线必填 variant_map.tsv（七列契约；BIM A1/A2 无 REF/ALT 断言）")
     parser.add_argument("--gate", required=True, help="01.gate/input_gate.json（门控产物）")
     parser.add_argument("--samples", required=True, help="samples.csv（FAM 对账）")
     parser.add_argument("--genome-fasta", default=None, help="参考 FASTA（VCF 路线必填）")

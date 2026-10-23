@@ -7,3 +7,4 @@ dependencies:
   - r-base>=4.2
   - r-ggplot2>=3.4
   - r-jsonlite>=1.8
+  - r-svglite>=2.1     # ggsave SVG 输出必需（formats 含 svg 时）

@@ -6,10 +6,14 @@
 - PLINK BIM 的 A1/A2 是**观测等位基因**，无 REF/ALT 参考方向断言；
 - 本工具按登记约定 ref=A2(allele2)、alt=A1(allele1)（plink --keep-allele-order
   保持 tped 列序），仅用于满足 GWASFlow BED 路线的身份对账契约；
+- variant_id 登记为 BIM/TPED 的 SNP ID（rsid）：GWASFlow 下游（normalize 对账、
+  harmonize 的 variant_map.get(rs)、trait_mac）都以 BIM SNP ID 为对账键，
+  BED 路线无 VCF 路线的 --set-id 重写步骤，故 variant_id 必须等于原始 SNP ID；
 - 效应方向以 GEMMA allele1(reported) 为准（GWASFlow 默认 target_effect_allele=reported），
   gwas.tsv 的 ref/alt 列语义为该登记约定，不构成参考等位基因声明。
 
-支持两种输入（产物应逐字节一致，可交叉对账）：
+支持两种输入（variant_id/坐标列逐字节一致；ref/alt 方向为各自登记约定，
+normalize 与 harmonize 的等位基因对账均为集合匹配，方向差异不阻断）：
   --tped <atpolydb.tped>   转换前（plink 未装时可用）
   --bim  <genotype.bim>    转换后（plink --keep-allele-order）
 
@@ -139,7 +143,10 @@ def main(argv=None):
             continue   # 非双等位 A/C/G/T：记录并跳过（GWASFlow normalize BED 路线会对账拦截）
         # 登记约定见 convention（集合与 BIM 对账一致；方向为登记约定非参考断言）
         ref, alt = a2, a1
-        variant_id = f"{chrom}:{pos}:{ref}:{alt}"
+        # variant_id = BIM/TPED 的 SNP ID（rsid）：GWASFlow BED 路线对账键
+        # （VCF 路线由 bcftools --set-id 重写 ID==variant_id；BED 路线 BIM 保持
+        #   外部原始 ID，故 variant_id 必须登记为该原始 ID，下游 variant_map.get(rs) 才能命中）
+        variant_id = rsid
         rows.append([variant_id, rsid, str(chrom), str(engine), str(pos_int), ref, alt])
 
     # variant_id 唯一性

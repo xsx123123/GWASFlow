@@ -38,6 +38,8 @@ def resolve_reference_paths(config, index_keys=None, base_path=None, logger=None
                 continue
             for key, value in ref_dict.items():
                 if isinstance(value, str):
+                    if not value:
+                        continue
                     if not value.startswith(root_dir) and not value.startswith("/"):
                         ref_dict[key] = os.path.join(root_dir, value)
 
