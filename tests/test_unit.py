@@ -794,3 +794,60 @@ def test_deliver_missing_index_rejected(tmp_path):
         "--out-dir", str(tmp_path / "o")])
     assert result.returncode == 2
     assert "缺失" in result.stderr
+
+
+# ---- 真实数据（AtPolyDB BED 路线）暴露的修复回归 ----
+
+def test_bed_route_reference_requirements():
+    """BED 路线按需校验不要求 FASTA/FAI/重命名映射（BIM 已是数值染色体）。"""
+    from rules.utils.reference_update import check_gwas_reference_paths
+
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        chrom_table = Path(tmp) / "chromosome_table.tsv"
+        chrom_table.write_text("chrom\tlength_bp\n1\t1000\n")
+        config = {
+            "Genome_Version": "TAIR9",
+            "genotype_format": "bed",
+            "GWAS_reference": {
+                "TAIR9": {
+                    "genome_fasta": "",
+                    "genome_fai": "",
+                    "chromosome_rename_map": "",
+                    "chromosome_table": str(chrom_table),
+                    "gff3": "",
+                    "function_table": "",
+                }
+            },
+        }
+        enabled = ["input_gate", "genotype_normalize", "genotype_qc", "visualization"]
+        # BED 路线：不应因 FASTA/rename map 为空而失败（candidate_genes 未启用，gff3 不校验）
+        check_gwas_reference_paths(config, enabled)   # 不抛即通过
+
+
+def test_bed_route_reference_still_requires_vcf_assets():
+    """VCF 路线仍要求 FASTA/FAI/rename map（防止修复过度）。"""
+    from rules.utils.reference_update import check_gwas_reference_paths
+
+    config = {
+        "Genome_Version": "TAIR9",
+        "genotype_format": "vcf",
+        "GWAS_reference": {
+            "TAIR9": {
+                "genome_fasta": "/nonexistent/genome.fasta",
+                "genome_fai": "/nonexistent/genome.fasta.fai",
+                "chromosome_rename_map": "/nonexistent/rename.tsv",
+            }
+        },
+    }
+    import io
+    import contextlib
+
+    stderr = io.StringIO()
+    with contextlib.redirect_stderr(stderr):
+        with pytest.raises(SystemExit):
+            check_gwas_reference_paths(
+                config, ["input_gate", "genotype_normalize", "genotype_qc"]
+            )
+    assert "genome_fasta" in stderr.getvalue()

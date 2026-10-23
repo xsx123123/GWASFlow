@@ -84,8 +84,10 @@ def check_gwas_reference_paths(config, enabled_modules, logger=None):
         if fmt in ("vcf", "bcf"):
             required_keys.update(["genome_fasta", "genome_fai", "chromosome_rename_map"])
         else:
+            # BED 路线：BIM 已是引擎数值染色体，无需 FASTA/FAI 与重命名映射
             required_keys.discard("genome_fasta")
             required_keys.discard("genome_fai")
+            required_keys.discard("chromosome_rename_map")
 
     missing = []
     for key in sorted(required_keys):

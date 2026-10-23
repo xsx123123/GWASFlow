@@ -1,0 +1,2 @@
+trait	phenotype_column	trait_type	unit	transform	primary_model	numeric_covariates	categorical_covariates	n_pcs
+FT10	FT10	continuous	days	none	gemma_lmm			3

@@ -270,12 +270,13 @@ def check_references(reference_manifest, enabled_modules):
     required = set()
     for module in enabled_modules:
         required.update(required_by_module.get(module, []))
-    # VCF 路线才需要 FASTA/FAI
+    # VCF/BCF 路线才需要 FASTA/FAI 与重命名映射；BED 路线 BIM 已是数值染色体
     if "genotype_normalize" in enabled_modules:
         fmt = reference_manifest.get("genotype_format", "vcf")
         if fmt not in ("vcf", "bcf"):
             required.discard("genome_fasta")
             required.discard("genome_fai")
+            required.discard("chromosome_rename_map")
 
     report = {
         "genome_version": version,

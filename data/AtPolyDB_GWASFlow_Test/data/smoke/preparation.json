@@ -1,0 +1,66 @@
+{
+  "status": "prepared_tped_not_yet_plink_or_gwas",
+  "assembly": "TAIR9",
+  "archive_member": "call_method_75/call_method_75_TAIR9.csv",
+  "phenotype_source_column": "5_FT10",
+  "phenotype_output_column": "FT10",
+  "phenotype_encoding": "latin-1",
+  "snp_step": 20,
+  "genotype_samples": 1307,
+  "phenotype_samples": 199,
+  "matched_samples": 199,
+  "selected_nonmissing_samples": 194,
+  "unmatched_phenotype_ids": [],
+  "matched_missing_phenotype_ids": [
+    "8430",
+    "8412",
+    "8357",
+    "8366",
+    "8411"
+  ],
+  "snps": {
+    "source_snps": 214051,
+    "written_snps": 10703,
+    "skipped_thinning": 203348
+  },
+  "source_snps_per_chr": {
+    "1": 52001,
+    "2": 28462,
+    "3": 43415,
+    "4": 36969,
+    "5": 53204
+  },
+  "written_snps_per_chr": {
+    "1": 2601,
+    "2": 1423,
+    "3": 2170,
+    "4": 1849,
+    "5": 2660
+  },
+  "selected_genotype_tokens": {
+    "C": 537682,
+    "T": 506117,
+    "G": 532883,
+    "A": 499700
+  },
+  "id_policy": "Match second genotype header (ecotype ID), FID=0, IID=ecotype ID; retain genotype column order",
+  "genotype_policy": "A/C/G/T calls represented as homozygous diploid pairs; unknown tokens fail",
+  "allele_policy": "Observed nucleotide alleles; PLINK A1/A2 are not asserted to be REF/ALT",
+  "sources": [
+    {
+      "file": "call_method_75.tar.gz",
+      "sha256": "7ad5ded6c72b703603f3d29ce8cd231b67979dcc56afb462a7035257e752cb76"
+    },
+    {
+      "file": "phenotype_published_raw.tsv",
+      "sha256": "6d76c6b59df7b954c1533a383e2322226d684d58919c09020f08e6c0b9004598"
+    }
+  ],
+  "outputs_sha256": {
+    "atpolydb.tfam": "26131cd955ad6140f9bea008eda464a453416705a21aa1dff1da467b5efe1239",
+    "atpolydb.tped": "4831eeeb6584e3745a7d9c387fc34bbab5733a5774271b917a932f7f34ee1508",
+    "phenotype.plink.tsv": "b82b8d5cd7c17bd93ebb9ef7f40b32ede242041c0c66ce20f97ae7bb75f3b16f",
+    "phenotypes.tsv": "6e55bfa755d34a2ffdde69f73482f1919792f466deac2d912037c07f0ba73218",
+    "samples.tsv": "1172d063b09d8e3b8c75609ff40e77a433addca0ff5a0d81f8da52e2884c02ce"
+  }
+}

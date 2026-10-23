@@ -25,3 +25,8 @@ flow/
 
 # 研发工具内部状态
 .codeartsdoer/
+
+# AtPolyDB 测试数据包的运行产物（数据快照本身入库，run 工作区排除）
+data/AtPolyDB_GWASFlow_Test/run/
+data/AtPolyDB_GWASFlow_Test/data/full/
+.DS_Store

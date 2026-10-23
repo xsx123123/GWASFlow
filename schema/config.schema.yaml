@@ -79,9 +79,9 @@ properties:
     pattern: "^/"
 
   covariates_tsv:
-    type: "string"
+    type: ["string", "null"]
     minLength: 1
-    pattern: "^/"
+    pattern: "^/"   # 仅约束 string 实例；无协变量项目允许 null（AtPolyDB 场景）
 
   expected_checksums_tsv:
     type: ["string", "null"]

@@ -58,6 +58,10 @@ Rscript --version
 
 ## 3. 真实数据准备契约（用户提供方责任，逐项核对）
 
+> 当前已提供的真实数据：`data/AtPolyDB_GWASFlow_Test/`（拟南芥 TAIR9）。该数据的全部准备
+> 资产与接入步骤已就绪，**见 `docs/ATPOLYDB_TEST_GUIDE.md` §1–§3**；以下通用契约适用于
+> 后续其他数据集接入。
+
 ### 3.1 基因型（二选一）
 
 **VCF 路线（主路线）**：

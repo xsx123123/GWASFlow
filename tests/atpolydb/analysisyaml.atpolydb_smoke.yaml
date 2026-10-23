@@ -1,0 +1,62 @@
+# AtPolyDB（拟南芥 TAIR9）smoke 子集 → GWASFlow BED 路线配置
+#
+# 用法：snakemake -s snakefile --config analysisyaml=<本文件绝对路径> -n
+# 前置：bash tests/atpolydb/prepare_inputs.sh（BED 三件套需 PLINK 1.9）
+#
+# 数据事实（data/AtPolyDB_GWASFlow_Test/data/smoke/preparation.json）：
+#   194 样本（FID=0, IID=ecotype）、10,703 SNP、常染色体 1–5、FT10 连续性状、无缺失、无协变量
+# 语义：BIM A1/A2 为观测等位基因（非 REF/ALT 断言）；variant_map 登记约定见
+#   tests/atpolydb/make_variant_map_from_bim.py 文档字符串。
+
+project_name: atpolydb_tair9_smoke
+Genome_Version: TAIR9
+species: Arabidopsis_thaliana
+
+# ---- 输入（本机绝对路径；部署时替换）----
+sample_csv: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/samples.csv
+phenotypes_tsv: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/phenotypes.tsv
+traits_tsv: /Users/zj/zj_code/GWASFlow/tests/atpolydb/traits.tsv
+covariates_tsv: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/covariates.tsv   # 占位（FT10 无协变量声明，不消费）
+expected_checksums_tsv: ""
+checksum_mode: auto                  # 无 MD5 基线 → 门控 baseline_only（数据包用 SHA256SUMS 独立校验）
+
+# ---- 基因型：BED 路线 ----
+genotype_format: bed
+genotype_input: ""
+genotype_bfile: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/genotype
+input_variant_map: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/data/smoke/variant_map.tsv
+
+# ---- 工作区（独立于数据目录；产物目录被 .gitignore 排除）----
+workflow: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/run/01.workflow
+data_deliver: /Users/zj/zj_code/GWASFlow/data/AtPolyDB_GWASFlow_Test/run/02.data_deliver
+
+execution_mode: local
+queue_id: ""
+
+# ---- 参考资源（TAIR9；BED 路线按需：FASTA/重命名映射不需要）----
+can_use_genome_version:
+  - TAIR9
+GWAS_reference:
+  TAIR9:
+    genome_fasta: ""                 # BED 路线不需要（按需校验已 discard）
+    genome_fai: ""
+    chromosome_table: /Users/zj/zj_code/GWASFlow/tests/atpolydb/chromosome_table.tair9.tsv
+    chromosome_rename_map: ""        # BED 路线 BIM 已是数值染色体
+    gff3: ""                         # candidate_genes=false 时不校验；启用须配 TAIR9 注释（不得混用 TAIR10/生菜）
+    function_table: ""
+
+# ---- 模块开关（默认全开基础上按数据现实调整）----
+candidate_genes: false               # 诚实关闭：本包未提供 TAIR9 GFF3；接入注释后再启用
+report: false                        # M6：渲染器未验收
+
+# ---- 参数覆盖（单位契约见 docs/SCRIPT_PARAMETERS.md §10）----
+parameter:
+  qc:
+    chr_count: 5                     # 拟南芥常染色体 1–5（替换生菜占位 9）
+    mind: 0.10
+    geno: 0.10
+    maf: 0.05
+    mac: 5
+  multiple_testing:
+    alpha: "0.05"
+    family_size: 1
