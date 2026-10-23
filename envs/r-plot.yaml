@@ -1,0 +1,9 @@
+# R 绘图环境（曼哈顿/QQ/诊断图）
+# 软件版本为占位，待 M3 固定后重验收。
+name: gwasflow-r-plot
+channels:
+  - conda-forge
+dependencies:
+  - r-base>=4.2
+  - r-ggplot2>=3.4
+  - r-jsonlite>=1.8

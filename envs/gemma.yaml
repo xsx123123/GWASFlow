@@ -1,0 +1,12 @@
+# GEMMA 环境（全队列 K + LMM 关联分析；含 python3 供包装脚本与 numpy 供矩阵验证）
+# 软件版本为占位，待 M3 固定后重验收。
+# openblas 受控线程：OPENBLAS_NUM_THREADS 由规则层注入（spec §4.1-2）。
+name: gwasflow-gemma
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python>=3.10,<3.15
+  - gemma>=0.98.1
+  - openblas>=0.3.20
+  - numpy>=1.24

@@ -1,0 +1,9 @@
+# PLINK 2 环境（QC 四阶段/剪枝/PCA/clump/trait MAC；含 python3 供包装脚本）
+# 软件版本为占位，待 M3 固定后重验收。
+name: gwasflow-plink2
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python>=3.10,<3.15
+  - plink2>=2.0

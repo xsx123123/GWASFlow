@@ -1,0 +1,3 @@
+trait	phenotype_column	trait_type	unit	transform	primary_model	numeric_covariates	categorical_covariates	n_pcs
+leaf_length	leaf_length	continuous	cm	none	gemma_lmm	days_to_measure	batch	3
+leaf_width	leaf_width	continuous	cm	none	gemma_lmm		batch	0

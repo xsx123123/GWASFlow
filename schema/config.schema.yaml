@@ -1,0 +1,426 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "GWASFlow Main Configuration Schema"
+description: "GWASFlow 主配置校验（比例/计数/kb/bp 单位契约 + 未实现功能拒绝分支）"
+type: "object"
+
+definitions:
+  ratio01:
+    type: "number"
+    minimum: 0
+    maximum: 1
+
+required:
+  - project_name
+  - Genome_Version
+  - species
+  - pipeline_version
+  - sample_csv
+  - phenotypes_tsv
+  - traits_tsv
+  - covariates_tsv
+  - genotype_format
+  - workflow
+  - data_deliver
+  - execution_mode
+  - input_gate
+  - genotype_normalize
+  - genotype_qc
+  - population_structure
+  - phenotype_qc
+  - kinship_analysis
+  - association_analysis
+  - result_harmonization
+  - locus_analysis
+  - local_ld
+  - candidate_genes
+  - visualization
+  - export_summary
+  - deliver
+  - report
+  - only_qc
+  - print_target
+  - log_level
+  - seed
+  - parameter
+  - cluster_config
+  - GWAS_reference
+  - can_use_genome_version
+
+properties:
+  project_name:
+    type: "string"
+    minLength: 1
+
+  Genome_Version:
+    type: "string"
+    minLength: 1
+
+  species:
+    type: "string"
+    minLength: 1
+
+  pipeline_version:
+    type: "string"
+    minLength: 1
+
+  sample_csv:
+    type: "string"
+    minLength: 1
+    pattern: "^/"
+
+  phenotypes_tsv:
+    type: "string"
+    minLength: 1
+    pattern: "^/"
+
+  traits_tsv:
+    type: "string"
+    minLength: 1
+    pattern: "^/"
+
+  covariates_tsv:
+    type: "string"
+    minLength: 1
+    pattern: "^/"
+
+  expected_checksums_tsv:
+    type: ["string", "null"]
+
+  checksum_mode:
+    type: "string"
+    enum: ["auto", "verified_required", "baseline"]
+    default: "auto"
+
+  genotype_format:
+    type: "string"
+    enum: ["vcf", "bcf", "bed"]
+
+  genotype_input:
+    type: ["string", "null"]
+
+  genotype_bfile:
+    type: ["string", "null"]
+
+  input_variant_map:
+    type: ["string", "null"]
+
+  workflow:
+    type: "string"
+    minLength: 1
+    pattern: "^/"
+
+  data_deliver:
+    type: "string"
+    minLength: 1
+    pattern: "^/"
+
+  execution_mode:
+    type: "string"
+    enum: ["local", "cluster"]
+    default: "local"
+
+  queue_id:
+    type: ["string", "null"]
+
+  # ---- 15 个模块开关（显式布尔值）----
+  input_gate:
+    type: "boolean"
+    const: true          # 基础模块不可关
+  genotype_normalize:
+    type: "boolean"
+    const: true          # 基础模块不可关
+  genotype_qc:
+    type: "boolean"
+    const: true          # 基础模块不可关
+  population_structure:
+    type: "boolean"
+    default: true
+  phenotype_qc:
+    type: "boolean"
+    default: true
+  kinship_analysis:
+    type: "boolean"
+    default: true
+  association_analysis:
+    type: "boolean"
+    default: true
+  result_harmonization:
+    type: "boolean"
+    default: true
+  locus_analysis:
+    type: "boolean"
+    default: true
+  local_ld:
+    type: "boolean"
+    default: true
+  candidate_genes:
+    type: "boolean"
+    default: true
+  visualization:
+    type: "boolean"
+    default: true
+  export_summary:
+    type: "boolean"
+    const: true          # 基础模块不可关
+  deliver:
+    type: "boolean"
+    default: true
+  report:
+    type: "boolean"
+    default: false       # M6：渲染器未验收前默认 false
+
+  # ---- 未实现功能拒绝分支（D8 第一层：仅接受 false/null）----
+  loco:
+    type: ["boolean", "null"]
+    enum: [false, null]
+  farmcpu:
+    type: ["boolean", "null"]
+    enum: [false, null]
+  blink:
+    type: ["boolean", "null"]
+    enum: [false, null]
+  imputation:
+    type: ["boolean", "null"]
+    enum: [false, null]
+  multi_environment:
+    type: ["boolean", "null"]
+    enum: [false, null]
+  human_profile:
+    type: ["boolean", "null"]
+    enum: [false, null]
+  pgen_import:
+    type: ["boolean", "null"]
+    enum: [false, null]
+  hapmap_import:
+    type: ["boolean", "null"]
+    enum: [false, null]
+
+  only_qc:
+    type: "boolean"
+    default: false
+
+  print_target:
+    type: "boolean"
+    default: false
+
+  print_sample:
+    type: "boolean"
+    default: false
+
+  log_level:
+    type: "string"
+    enum: ["DEBUG", "INFO", "WARNING", "ERROR"]
+    default: "INFO"
+
+  seed:
+    type: "integer"
+    minimum: 0
+
+  target_effect_allele:
+    type: "string"
+    enum: ["reported", "alt"]
+    default: "reported"
+
+  reference_path:
+    type: "string"
+
+  can_use_genome_version:
+    type: "array"
+    items:
+      type: "string"
+    minItems: 1
+
+  GWAS_reference:
+    type: "object"
+    minProperties: 1
+
+  cluster_config:
+    type: "object"
+    required: ["resource_profiles"]
+    properties:
+      resource_profiles:
+        type: "object"
+        minProperties: 1
+
+  parameter:
+    type: "object"
+    required:
+      - threads
+      - qc
+      - structure
+      - kinship
+      - association
+      - multiple_testing
+      - loci
+      - local_ld
+      - candidate
+      - normalization
+      - plotting
+    properties:
+      threads:
+        type: "object"
+      normalization:
+        type: "object"
+        required: ["filter_policy", "multiallelic_policy", "ploidy", "representation"]
+        properties:
+          filter_policy:
+            type: "string"
+            enum: ["pass_only", "pass_or_unfiltered"]
+          multiallelic_policy:
+            type: "string"
+            enum: ["exclude"]
+          ploidy:
+            type: "integer"
+            const: 2            # 其他倍性首版拒绝
+          representation:
+            type: "string"
+            enum: ["hardcall"]  # 剂量输入拒绝
+      qc:
+        type: "object"
+        required: ["chr_count", "pre_geno", "mind", "geno", "maf", "mac"]
+        properties:
+          chr_count:
+            type: "integer"
+            minimum: 1
+            maximum: 95         # 染色体对数
+          pre_geno:
+            $ref: "#/definitions/ratio01"
+          mind:
+            $ref: "#/definitions/ratio01"
+          geno:
+            $ref: "#/definitions/ratio01"
+          maf:
+            type: "number"
+            minimum: 0
+            maximum: 0.5
+          mac:
+            type: "integer"
+            minimum: 1          # 正整数计数
+          memory_mb:
+            type: "integer"
+            minimum: 512
+          dp_min:
+            type: ["integer", "null"]
+          gq_min:
+            type: ["integer", "null"]
+          min_samples_after_qc:
+            type: "integer"
+            minimum: 3
+      structure:
+        type: "object"
+        required: ["prune_window_kb", "prune_step", "prune_r2", "pca_components"]
+        properties:
+          prune_window_kb:
+            type: "number"
+            exclusiveMinimum: 0   # kb 正数
+          prune_step:
+            type: "integer"
+            minimum: 1            # 标记数正整数
+          prune_r2:
+            type: "number"
+            exclusiveMinimum: 0
+            maximum: 1
+          pca_components:
+            type: "integer"
+            minimum: 1
+      kinship:
+        type: "object"
+        required: ["type", "mode"]
+        properties:
+          type:
+            type: "string"
+            enum: ["centered", "standardized"]
+          mode:
+            type: "string"
+            enum: ["genome_wide"]  # loco 属后续工作包，schema 层拒绝
+          symmetry_tolerance:
+            type: "number"
+            exclusiveMinimum: 0
+          eigenvalue_tolerance:
+            type: "number"
+            exclusiveMinimum: 0
+      association:
+        type: "object"
+        required: ["primary_test", "maf", "miss"]
+        properties:
+          primary_test:
+            type: "string"
+            enum: ["wald", "lrt", "score", "all"]   # 预声明主检验
+          maf:
+            type: "number"
+            minimum: 0
+            maximum: 0.5
+          miss:
+            $ref: "#/definitions/ratio01"
+      multiple_testing:
+        type: "object"
+        required: ["alpha", "family_size"]
+        properties:
+          alpha:
+            type: "string"      # Decimal 字符串
+            pattern: "^0?\\.[0-9]+$"
+          family_size:
+            type: "integer"
+            minimum: 1
+      loci:
+        type: "object"
+        required: ["clump_r2", "clump_kb", "region_boundary", "fallback_flank_bp"]
+        properties:
+          clump_r2:
+            type: "number"
+            exclusiveMinimum: 0
+            maximum: 1
+          clump_kb:
+            type: "number"
+            exclusiveMinimum: 0   # kb 正数
+          region_boundary:
+            type: "string"
+            enum: ["ld", "fixed_window"]
+          fallback_flank_bp:
+            type: "integer"
+            minimum: 0            # bp 整数 >=0
+      local_ld:
+        type: "object"
+        required: ["metric", "maf", "missing_max", "het_max", "max_regional_plots"]
+        properties:
+          metric:
+            type: "string"
+            enum: ["r2", "dprime"]
+          maf:
+            type: "number"
+            minimum: 0
+            maximum: 0.5
+          missing_max:
+            $ref: "#/definitions/ratio01"
+          het_max:
+            type: "number"
+            minimum: 0
+            maximum: 1
+          max_regional_plots:
+            type: "integer"
+            minimum: 1
+      candidate:
+        type: "object"
+        required: ["flank_bp", "gene_feature", "id_attribute"]
+        properties:
+          flank_bp:
+            type: "integer"
+            minimum: 0            # bp 整数 >=0
+          gene_feature:
+            type: "string"
+            minLength: 1
+          id_attribute:
+            type: "string"
+            minLength: 1
+      plotting:
+        type: "object"
+        properties:
+          point_budget:
+            type: "integer"
+            minimum: 1000
+          p_zero_display_cap:
+            type: "string"
+          formats:
+            type: "string"
+
+additionalProperties: true

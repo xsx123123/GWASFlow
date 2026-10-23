@@ -1,0 +1,38 @@
+# GWASFlow Pipeline - Cluster Resource Configuration
+#
+# 框架四档（low/medium/high/very_high）+ gwas_kinship_large 高内存档。
+# dense K 内存 ∝ N^2，禁止单一固定 mem 值承诺所有群体（spec §4.1-3）。
+# 档位值为起点，需由真实 benchmark 调整。
+
+cluster_config:
+  resource_profiles:
+    low_resource:
+      threads: 2
+      mem_mb: 8000
+      runtime: 60          # minutes
+      queue_type: "default_queue"
+
+    medium_resource:
+      threads: 8
+      mem_mb: 32000
+      runtime: 240         # minutes
+      queue_type: "default_queue"
+
+    high_resource:
+      threads: 16
+      mem_mb: 64000
+      runtime: 480         # minutes
+      queue_type: "high_mem_queue"
+
+    very_high_resource:
+      threads: 32
+      mem_mb: 128000
+      runtime: 720         # minutes
+      queue_type: "high_mem_queue"
+
+    # dense K 专用高内存档（K 内存随 N^2 增长）
+    gwas_kinship_large:
+      threads: 8
+      mem_mb: 96000
+      runtime: 480         # minutes
+      queue_type: "high_mem_queue"

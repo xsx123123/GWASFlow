@@ -1,0 +1,83 @@
+# GWASFlow Pipeline - Runtime Parameter Configuration
+#
+# 单位契约（与 docs/SCRIPT_PARAMETERS.md §10 对照表逐字一致）：
+#   pre_geno/mind/geno/maf : 比例 (0..1, maf<=0.5)
+#   mac                    : 正整数计数 (>=1)
+#   prune_window_kb/clump_kb : kb 正数
+#   prune_step             : 标记数 正整数
+#   flank_bp/fallback_flank_bp : bp 整数 (>=0)
+#   chr_count              : 染色体对数 1..95（生菜示例 9，M2 占位）
+#   pca_components/n_pcs   : 维数 正整数
+#
+# QC 默认阈值（mind=0.10/geno=0.10/maf=0.05/mac=5）为审阅起点，非普适植物标准。
+
+parameter:
+  threads:
+    verify_inputs: 2
+    bcftools: 4
+    plink2: 4
+    gemma: 1
+    plotting: 2
+    deliver: 4
+
+  qc:
+    chr_count: 9          # 二倍体常染色体对数（M2 占位，生菜示例）
+    pre_geno: 0.20        # 初步宽松位点缺失阈值（比例）
+    mind: 0.10            # 样本缺失阈值（比例）
+    geno: 0.10            # 最终位点缺失阈值（比例）
+    maf: 0.05             # 队列级最小 MAF（比例，<=0.5）
+    mac: 5                # 队列级最小 MAC（正整数计数）
+    memory_mb: 8000       # PLINK --memory 工作内存
+    dp_min: null          # FORMAT/DP 基因型置缺失阈值（null=不执行；启用需字段存在）
+    gq_min: null          # FORMAT/GQ 基因型置缺失阈值（null=不执行；启用需字段存在）
+    min_samples_after_qc: 20   # QC 后最少样本数（阻断阈值）
+
+  structure:
+    prune_window_kb: 50   # LD 剪枝物理窗口（kb）
+    prune_step: 5         # 剪枝步长（标记数）
+    prune_r2: 0.20        # 剪枝 r2 阈值 (0,1]
+    pca_components: 10    # 输出 PC 数（需小于有效矩阵秩）
+
+  kinship:
+    type: centered        # centered | standardized（GEMMA -gk 1|2）
+    mode: genome_wide     # genome_wide（loco 属后续工作包，schema 层拒绝）
+    symmetry_tolerance: 1.0e-8
+    eigenvalue_tolerance: 1.0e-8
+
+  association:
+    primary_test: wald    # wald | lrt | score | all（GEMMA -lmm 1|2|3|4，预声明）
+    maf: 0.05             # GEMMA -maf 显式生效值（比例）
+    miss: 0.10            # GEMMA -miss 位点缺失阈值（比例）
+
+  multiple_testing:
+    alpha: "0.05"         # (0,1) Decimal 字符串
+    family_size: 1        # 预声明主性状数；阈值 = alpha/(family_size*M)
+
+  loci:
+    clump_r2: 0.20        # clump r2
+    clump_kb: 500         # clump 搜索半径（kb）
+    region_boundary: ld   # ld | fixed_window（fixed_window 标识方法，不称可信区间）
+    fallback_flank_bp: 50000   # LD 信息不足时回退窗口（bp，整数>=0）
+
+  local_ld:
+    metric: r2            # r2 | dprime
+    maf: 0.05             # LD 工具自身 MAF 过滤（记录审计）
+    missing_max: 0.10     # LD 工具自身缺失过滤（记录审计）
+    het_max: 1.0          # LD 工具自身杂合度过滤（记录审计）
+    max_regional_plots: 20    # 只限出图数量，不删数据
+
+  candidate:
+    flank_bp: 0           # 已定义区域外的额外延伸（bp，默认 0 不扩大窗口）
+    gene_feature: gene    # GFF 第三列匹配的特征类型
+    id_attribute: ID      # GFF3 属性中的唯一基因 ID
+
+  normalization:
+    filter_policy: pass_only   # pass_only | pass_or_unfiltered（"." 记录"未评估"语义）
+    multiallelic_policy: exclude  # exclude（split 属后续工作包）
+    ploidy: 2             # 其他倍性首版拒绝
+    representation: hardcall    # 剂量输入拒绝静默转 BED
+
+  plotting:
+    point_budget: 200000  # 仅控制交互绘图数据量（显著点全保留）
+    p_zero_display_cap: "1e-300"  # p_underflow 显示上限（不改统计表原始值）
+    formats: svg,pdf,png

@@ -1,0 +1,10 @@
+# 基因型规范化环境（python 包装脚本 + bcftools + plink2 命令链）
+# 软件版本为占位，待 M3 固定后重验收。
+name: gwasflow-genotype
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python>=3.10,<3.15
+  - bcftools>=1.17
+  - plink2>=2.0

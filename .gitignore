@@ -1,0 +1,27 @@
+# GWASFlow .gitignore
+# Snakemake 与分析产物
+.snakemake/
+logs/
+benchmarks/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# 工作区分析产物（按 workflow 目录名动态产生，不入库）
+# 注意例外：examples/tables/ 下模板数据必须入库（examples/ 不匹配以上规则）
+
+# IDE 与系统文件
+.idea/
+.vscode/
+.DS_Store
+
+# 临时目录（规则层原子写入模式）
+*.tmp.*
+.testenv/
+*.venv*
+
+# 上游参考仓库（本地只读参考；commit 24a0cd3e 已记录于 docs/FRAMEWORK_ALIGNMENT.md）
+flow/
+
+# 研发工具内部状态
+.codeartsdoer/

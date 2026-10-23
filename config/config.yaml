@@ -1,0 +1,62 @@
+# GWASFlow Pipeline - Core Configuration File
+#
+# 植物二倍体、硬分型双等位 SNP、连续数量性状的 GEMMA LMM 关联分析流程。
+# 框架对齐：FlowFrame v2.0 (CygnusX-Labs/FlowFrame, commit 24a0cd3e)
+#
+# 注意：15 个模块开关必须显式声明默认值（缺键即 Schema 校验失败）。
+# 输入表路径键必须为绝对路径（样本表解析发生在 workdir 重定向前）。
+
+# ---- 项目元数据 ----
+project_name: gwasflow_demo
+Genome_Version: Lsat_Salinas_v11        # 生菜参考组装占位值（M2：部署前须核对真实版本）
+species: Lactuca_sativa
+pipeline_version: "0.1.0"
+
+# ---- 输入表路径（绝对路径，analysisyaml 覆盖）----
+sample_csv: /data/project/01.workflow/samples.csv
+phenotypes_tsv: /data/project/01.workflow/phenotypes.tsv
+traits_tsv: /data/project/01.workflow/traits.tsv
+covariates_tsv: /data/project/01.workflow/covariates.tsv
+expected_checksums_tsv: ""              # 可选：提供方 MD5 基线（空 = baseline_only 模式）
+checksum_mode: auto                      # auto | verified_required | baseline
+
+# ---- 基因型输入 ----
+genotype_format: vcf                     # vcf | bcf | bed
+genotype_input: /data/project/00.raw_data/cohort.vcf.gz   # VCF/BCF 文件路径
+genotype_bfile: ""                       # bed 路线时的前缀（不含 .bed/.bim/.fam）
+input_variant_map: ""                    # bed 路线时必须提供已核验的 variant_map
+
+# ---- 工作区与交付（绝对路径）----
+workflow: /data/project/01.workflow
+data_deliver: /data/project/02.data_deliver
+
+# ---- 执行模式 ----
+execution_mode: local
+queue_id: ""
+
+# ---- 15 个模块开关（显式默认值；缺键即 Schema 校验失败）----
+input_gate: true
+genotype_normalize: true
+genotype_qc: true
+population_structure: true
+phenotype_qc: true
+kinship_analysis: true
+association_analysis: true
+result_harmonization: true
+locus_analysis: true
+local_ld: true
+candidate_genes: true
+visualization: true
+export_summary: true
+deliver: true
+report: false                            # M6：GWAS 渲染器未验收前保持 false
+
+# ---- 流程控制 ----
+only_qc: false                           # true 时仅保留 gate/normalize/qc/phenotype_qc/summary/deliver
+print_target: false
+print_sample: false
+log_level: INFO
+seed: 20261023                           # M7：种子策略显式默认值（进 project_summary）
+
+# ---- 效应方向（全局预声明，不按显著位点选择模型）----
+target_effect_allele: reported           # reported | alt

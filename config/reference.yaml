@@ -1,0 +1,33 @@
+# GWASFlow Pipeline - Reference Genome Configuration
+#
+# GWAS_reference 按版本登记当前组装所需的参考资源：
+#   genome_fasta / genome_fai     : 参考序列（VCF 路线 REF 校验必需）
+#   chromosome_table              : 染色体顺序+长度（绘图与区域展示来源）
+#   chromosome_rename_map         : 原染色体名 -> 引擎数值名（两列无表头 TSV，须覆盖全部输入染色体）
+#   gff3                          : 基因位置注释（候选基因模块）
+#   function_table                : 可选基因功能描述表
+#
+# 仅已启用模块所需参考资源参与门控校验（only_qc 且未启用候选基因时 GFF3 缺失不阻断）。
+# 迁移部署时更新 reference_path 与各版本相对路径。
+
+reference_path: /data/reference/GWASFlow_reference
+
+# Supported Genome Versions
+can_use_genome_version:
+  - Lsat_Salinas_v11    # Lactuca sativa (Lettuce) Salinas v11（M2 占位）
+
+# GWAS Reference Registry（按版本登记，值为相对 reference_path 的路径）
+GWAS_reference:
+  Lsat_Salinas_v11:
+    genome_fasta: Lsat_Salinas_v11/genome.fasta
+    genome_fai: Lsat_Salinas_v11/genome.fasta.fai
+    chromosome_table: Lsat_Salinas_v11/chromosome_table.tsv
+    chromosome_rename_map: Lsat_Salinas_v11/chromosome_rename.tsv
+    gff3: Lsat_Salinas_v11/genes.gff3
+    function_table: Lsat_Salinas_v11/functions.tsv
+
+# 染色体对数按版本登记（生菜示例 9 对，M2 占位：部署前须核对真实组装）
+ploidy_setting:
+  Lsat_Salinas_v11:
+    ploidy: 2
+    chr_count: 9

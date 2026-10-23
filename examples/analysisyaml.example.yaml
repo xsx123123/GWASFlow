@@ -1,0 +1,51 @@
+# GWASFlow 项目级配置覆盖示例（analysisyaml）
+# 用法：snakemake -s snakefile --config analysisyaml=/path/to/this.yaml
+#
+# 注意：
+# - 路径必须为绝对路径（样本表解析发生在 workdir 重定向前）
+# - 本示例值仅为格式参考；材料数达不到 min-samples=20，不能直接运行完整分析
+# - Genome_Version 须与 config/reference.yaml 的 can_use_genome_version 匹配
+
+# ─── 项目元数据 ─────────────────────────────────────────
+project_name: lettuce_gwas_demo
+Genome_Version: Lsat_Salinas_v11      # M2 占位：部署前核对真实组装版本
+species: Lactuca_sativa
+
+# ─── 输入表路径（绝对路径）──────────────────────────────
+sample_csv: /data/project/01.workflow/samples.csv
+phenotypes_tsv: /data/project/01.workflow/phenotypes.tsv
+traits_tsv: /data/project/01.workflow/traits.tsv
+covariates_tsv: /data/project/01.workflow/covariates.tsv
+expected_checksums_tsv: /data/project/01.workflow/expected_md5.tsv
+checksum_mode: auto
+
+# ─── 基因型输入 ─────────────────────────────────────────
+genotype_format: vcf                  # vcf | bcf | bed
+genotype_input: /data/project/00.raw_data/cohort.vcf.gz
+# bed 路线示例：
+# genotype_format: bed
+# genotype_bfile: /data/project/00.raw_data/cohort
+# input_variant_map: /data/project/00.raw_data/cohort.variant_map.tsv
+
+# ─── 工作区与交付（绝对路径）────────────────────────────
+workflow: /data/project/01.workflow
+data_deliver: /data/project/02.data_deliver
+
+# ─── 执行模式 ───────────────────────────────────────────
+execution_mode: local
+queue_id: ""
+
+# ─── 模块开关（按需覆盖；15 个开关在 config.yaml 有显式默认值）──
+only_qc: false
+deliver: true
+report: false          # M6：渲染器未验收前保持 false（启用即显式报错）
+local_ld: true
+
+# ─── 参数覆盖示例（单位契约见 docs/SCRIPT_PARAMETERS.md §10）──
+parameter:
+  qc:
+    chr_count: 9       # 生菜示例占位（M2）；比例/计数单位勿混
+    mind: 0.10
+    geno: 0.10
+    maf: 0.05
+    mac: 5

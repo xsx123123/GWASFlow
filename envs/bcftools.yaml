@@ -1,0 +1,8 @@
+# BCFtools 环境（VCF/BCF 规范化）
+# 软件版本为占位，待 M3 固定后重验收。
+name: gwasflow-bcftools
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - bcftools>=1.17

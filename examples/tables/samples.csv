@@ -1,0 +1,4 @@
+sample,fid,iid,sample_name,group,include
+L001,L001,L001,Lettuce-001,salinas_group,true
+L002,L002,L002,Lettuce-002,salinas_group,true
+L003,L003,L003,Lettuce-003,forest_group,true
