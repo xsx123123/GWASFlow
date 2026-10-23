@@ -39,7 +39,7 @@ def main(argv=None):
             missing.append(path)
             continue
         role = (
-            "gwas_plot" if ("manhattan" in path or "/qq." in path)
+            "gwas_plot" if ("manhattan" in path or "/qq" in path)
             else "diagnostic_plot" if ("diagnostics" in path
                                        or "distribution" in path
                                        or "sample_inclusion" in path)

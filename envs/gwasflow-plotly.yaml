@@ -1,0 +1,8 @@
+# 交互式绘图环境（plotly WebGL 曼哈顿/QQ HTML；标准库读表，无 pandas 依赖）
+# 静态发表图仍走 r-plot.yaml（R/ggplot2）。
+name: gwasflow-plotly
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10,<3.15
+  - plotly>=5.24

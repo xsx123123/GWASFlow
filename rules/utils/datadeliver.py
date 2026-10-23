@@ -176,6 +176,12 @@ def visualization_outputs(config, samples, traits, module_status):
         outputs.extend(
             expand("12.plots/{trait}/plot_data.tsv", trait=list(traits.keys()))
         )
+        outputs.extend(
+            expand("12.plots/{trait}/manhattan_interactive.html", trait=list(traits.keys()))
+        )
+        outputs.extend(
+            expand("12.plots/{trait}/qq_interactive.html", trait=list(traits.keys()))
+        )
     if (
         module_status.get("population_structure") and module_status["population_structure"].enabled
         and module_status.get("kinship_analysis") and module_status["kinship_analysis"].enabled
