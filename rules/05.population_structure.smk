@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 05.population_structure.smk: LD 剪枝 + 剪枝集 PCA
+# GWASFlow - 05.population_structure.smk: LD pruning + PCA on the pruned marker set
 #
-# 用途隔离（spec §5.4.1-1）：PCA 使用剪枝标记集；关联分析使用完整 cohort 标记集。
-# 规则编号 ≠ 执行顺序：04.phenotype_qc 依赖本规则产物（n_pcs>0 时）。
+# Usage isolation (spec §5.4.1-1): PCA uses the LD-pruned marker set; association analysis uses the full cohort marker set.
+# Rule number != execution order: 04.phenotype_qc consumes this rule's output (when n_pcs>0).
 
 _QC_PARAMS = config["parameter"]["qc"]
 _STRUCT_PARAMS = config["parameter"]["structure"]
 
 
 rule prune_pca:
-    """LD 剪枝（--indep-pairwise 窗口 kb/步长/r2）+ 剪枝集 PCA（scols=fid 保留 FID）。"""
+    """LD pruning (--indep-pairwise window-kb/r2) + PCA on the pruned set (scols=fid keeps FID).
+
+    Input: 03.genotype_qc/cohort.{bed,bim,fam}.
+    Process: prune variants into approximate linkage equilibrium with plink2 --indep-pairwise <window>kb <r2> (kb windows force step=1); run plink2 --pca on the pruned set keeping FID via scols=fid; an empty prune set degrades to empty PCA outputs with a recorded warning.
+    Output: 04.structure/pca_prune.{prune.in,prune.out} + pca.{eigenvec,eigenval}.
+    """
     input:
         bed="03.genotype_qc/cohort.bed",
         bim="03.genotype_qc/cohort.bim",

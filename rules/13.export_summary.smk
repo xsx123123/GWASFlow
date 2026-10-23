@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 13.export_summary.smk: 项目摘要与显式产物索引
+# GWASFlow - 13.export_summary.smk: Project summary and explicit artifact index
 
 import json
 #
-# partial 不写 complete；only_qc 不引用未运行模块；artifact_index 为显式集合。
+# partial never claims complete; only_qc never references modules that did not run; artifact_index is an explicit set.
 
 
 def _export_plan_json(wildcards):
-    """运行计划 JSON（module_status / analysis_targets / trait metadata 路径）。"""
+    """Run plan JSON (module_status / analysis_targets / trait metadata paths)."""
     trait_metadata = {}
     prepare_metadata = {}
     if MODULE_STATUS["result_harmonization"].enabled:
@@ -32,7 +32,12 @@ def _export_plan_json(wildcards):
 
 
 rule export_summary:
-    """project_summary.json（七类审计）+ artifact_index.tsv（显式集合）。"""
+    """Project summary with seven audit categories + explicit artifact index.
+
+    Input: all analysis targets + effective_config.yaml + qc_audit.json + gate artifact + cohort trio + sample order.
+    Process: aggregate config, gate, QC, structure, trait, association and delivery audit categories into project_summary.json with honest status (partial is never written as complete; only_qc never references unrun modules); emit artifact_index.tsv as the explicit set of artifacts.
+    Output: 13.summary/project_summary.json + artifact_index.tsv.
+    """
     input:
         analysis=lambda wc: list(ALL_TARGETS.plan_analysis),
         effective_config="13.summary/effective_config.yaml",

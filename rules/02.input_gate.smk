@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 02.input_gate.smk: 输入门控与基因型规范化
+# GWASFlow - 02.input_gate.smk: Input gating and genotype normalization
 #
-# 契约：
-# - 外部输入文件全集进 input（不进 params，spec §5.1.1-5）
-# - 门控产物 input_gate.json 是硬门控：下游规则显式 input 挂接
-# - 规则 log 与工具自身 --log-file 不同路径
-# - 临时目录 + 成功后原子移动（design §2.1.3-4）
+# Contracts:
+# - The full set of external input files goes into rule inputs (never params, spec §5.1.1-5)
+# - Gate artifact input_gate.json is a hard gate: downstream rules attach it explicitly as input
+# - Rule logs stay separate from tool-owned --log-file logs
+# - Temp directory + atomic move on success (design §2.1-3-4)
 
 import os
 
 
 def _genotype_input_files(cfg):
-    """按基因型格式返回输入文件全集（含索引/三件套）。"""
+    """Return the full set of genotype input files (index for VCF/BCF; bed/bim/fam trio for BED)."""
     fmt = cfg.get("genotype_format", "vcf")
     files = []
     if fmt in ("vcf", "bcf"):
@@ -25,7 +25,7 @@ def _genotype_input_files(cfg):
                 index = candidate
                 break
         if index is None:
-            index = main + ".csi"   # 不存在时仍声明（门控报缺失并指明文件）
+            index = main + ".csi"   # still declared when absent (gate reports the missing file explicitly)
         files.append(index)
     else:
         bfile = cfg.get("genotype_bfile", "")
@@ -36,9 +36,11 @@ def _genotype_input_files(cfg):
 
 
 rule verify_inputs:
-    """输入门控：逐文件角色/组件/可读性校验 + MD5 三态 + 表格契约 + 参考按需校验。
+    """Input gate: per-file role/component/readability checks + 3-state MD5 + table contracts + on-demand reference validation.
 
-    产出 01.gate/ 三件 + 13.summary/effective_config.yaml（Step 6 快照落盘）。
+    Input: all external files (genotype trio/VCF+index, variant_map, samples, phenotypes, traits, covariates, expected checksums), input/reference manifests, config snapshot.
+    Process: verify each file's role, components and readability; MD5 in three states (verified / mismatch / baseline_only without a baseline); validate table column contracts and reference resources required by the enabled modules only.
+    Output: 01.gate/input_gate.json + md5_check.tsv + reference_check.json, and 13.summary/effective_config.yaml (Step 6 snapshot flushed here).
     """
     input:
         genotype=_genotype_input_files(config),
@@ -119,14 +121,19 @@ rule verify_inputs:
         """
 
 
-# VCF 路线参考资源（按 Genome_Version 解析）
+# VCF-route reference resources (resolved per Genome_Version)
 _REFERENCE = config.get("GWAS_reference", {}).get(str(config.get("Genome_Version", "")).strip(), {})
 _QC_PARAMS = config["parameter"]["qc"]
 _NORM_PARAMS = config["parameter"]["normalization"]
 
 
 rule normalize_genotype:
-    """基因型规范化：VCF/BCF 命令链或 BED 对账 → raw_engine + variant_map + 审计。"""
+    """Genotype normalization: VCF/BCF command chain or BED cross-check into the engine format.
+
+    Input: raw genotype files (VCF/BCF+index, or BED trio + variant_map), gate artifact, samples.csv, optional reference FASTA/FAI/chromosome map.
+    Process: the VCF/BCF route runs the bcftools filter/norm/set-id/rename-chrs chain and converts to BED via plink2 (--double-id); the BED route cross-checks BIM against the provided variant_map (identity, coordinates, allele sets) and copies the trio unchanged; FAM identities are reconciled against samples.csv.
+    Output: 02.genotype/raw_engine.{bed,bim,fam} + variant_map.tsv + normalize_audit.json.
+    """
     input:
         genotype=_genotype_input_files(config),
         gate="01.gate/input_gate.json",

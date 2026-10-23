@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 09.locus_definition.smk: 显著区域定义（每性状）
+# GWASFlow - 09.locus_definition.smk: Significant locus definition (per trait)
 
 _LOCI_PARAMS = config["parameter"]["loci"]
 _ASSOC_PARAMS = config["parameter"]["association"]
@@ -18,7 +18,12 @@ def _assoc_test_file(wildcards):
 
 
 rule define_loci:
-    """lead 选取（阈值唯一样来源 metadata）+ clump 去冗余 + 区域边界登记。"""
+    """Locus definition: lead selection (threshold from metadata as the only source) + clump de-redundancy + region boundary registration.
+
+    Input: 08.results/{trait}/gwas.tsv + significant.tsv + metadata.json (threshold) + cohort trio + trait keep.tsv.
+    Process: select lead variants from the significant set using the metadata threshold; collapse redundant signals via plink2 clump (r2/kb); register locus boundaries (LD-based with fixed fallback flank); an empty significant set legally yields empty loci.
+    Output: 09.loci/{trait}/lead.tsv + loci.tsv + locus_manifest.json.
+    """
     input:
         sumstats="08.results/{trait}/gwas.tsv",
         significant="08.results/{trait}/significant.tsv",

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 08.result_harmonization.smk: 统一关联统计（每性状五件套）
+# GWASFlow - 08.result_harmonization.smk: Harmonized association statistics (five artifacts per trait)
 #
-# variant_map 自 NORM 直接供给（不经 QC 转发）：对账基准是规范化时点原始身份。
+# variant_map is supplied directly from NORM (not forwarded through QC): the reconciliation baseline is the original identity at normalization time.
 
 _ASSOC_PARAMS = config["parameter"]["association"]
 _MT_PARAMS = config["parameter"]["multiple_testing"]
@@ -21,7 +21,12 @@ def _assoc_input(wildcards):
 
 
 rule harmonize:
-    """统一关联统计：身份强校验 + 方向转换 + 极小 P + Bonferroni + 精确 MAC。"""
+    """Harmonized association statistics: strict identity validation + direction conversion + tiny-P handling + Bonferroni + exact MAC.
+
+    Input: raw GEMMA assoc output + 02.genotype/variant_map.tsv + trait sample metadata + run_metadata + trait MAC + gate artifact.
+    Process: strong identity validation (rs -> variant_map lookup, chr/pos match, allele-set match; structural errors abort, no silent skips); effect-direction conversion per target_effect_allele (reported keeps GEMMA allele1, alt flips beta/eaf); Decimal-precision tiny P (p=0 recorded as-is, no fabricated values); Bonferroni threshold = alpha/(family_size x M) with M = valid P count; exact MAC attached per variant; unreported variants reconciled against variant_map.
+    Output: 08.results/{trait}/gwas.tsv + significant.tsv + invalid_variants.tsv + unreported_variants.tsv + metadata.json.
+    """
     input:
         assoc=lambda wc: _assoc_input(wc),
         variant_map="02.genotype/variant_map.tsv",

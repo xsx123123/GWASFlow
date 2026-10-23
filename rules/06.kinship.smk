@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 06.kinship.smk: 全队列亲缘关系矩阵（计算 + 验证）
+# GWASFlow - 06.kinship.smk: Cohort-wide kinship matrix (computation + validation)
 #
-# 全队列 K（全 1 表型强制覆盖）；K 的样本集合恒为 FAM 全集。
-# dense K 内存 ∝ N^2：gwas_kinship_large 高内存档（禁止单一固定 mem 承诺所有群体）。
-# 规则 log 与 GEMMA 自身 log 分离。
+# Cohort-wide K (the all-ones phenotype forces full coverage); the sample set of K is always the full FAM set.
+# Dense K memory scales as N^2: gwas_kinship_large high-memory profile (no single fixed mem may promise to fit all cohorts).
+# Rule logs stay separate from GEMMA's own logs.
 
 _KINSHIP_PARAMS = config["parameter"]["kinship"]
 _K_MATRIX = "kinship.cXX.txt" if (_KINSHIP_PARAMS.get("type", "centered") == "centered") else "kinship.sXX.txt"
 
 
 def _first_trait_pheno_all():
-    """任一性状的全 1 表型文件（K 为全队列共享）。"""
+    """Any trait's all-ones phenotype file (K is shared cohort-wide)."""
     if TRAITS:
         first_trait = sorted(TRAITS.keys())[0]
         return f"05.phenotype/{first_trait}/kinship_all.pheno.txt"
@@ -19,7 +19,12 @@ def _first_trait_pheno_all():
 
 
 rule compute_kinship:
-    """GEMMA -gk 1|2 全队列 K（-p 全 1 表型，-bfile cohort）。"""
+    """Cohort-wide kinship matrix via GEMMA -gk 1|2 (-p all-ones phenotype, -bfile cohort).
+
+    Input: 03.genotype_qc/cohort.{bed,bim,fam} + any trait's kinship_all.pheno.txt + gate artifact.
+    Process: the wrapper script builds and runs GEMMA -gk 1 (centered) or -gk 2 (standardized) with the all-ones phenotype so every cohort sample enters K; the GEMMA command and run info are recorded for reconciliation.
+    Output: 06.kinship/kinship.cXX.txt (or .sXX.txt) + kinship.log.txt + sample_order.tsv.
+    """
     input:
         bed="03.genotype_qc/cohort.bed",
         bim="03.genotype_qc/cohort.bim",
@@ -67,7 +72,12 @@ rule compute_kinship:
 
 
 rule validate_kinship:
-    """K 矩阵验证：维度/对称性/行列身份/有限性/PSD（仅容忍数值误差）。"""
+    """Kinship matrix validation: dimensions / symmetry / row-column identity / finiteness / PSD (tolerating numerical error only).
+
+    Input: 06.kinship kinship matrix + sample_order.tsv + cohort.fam.
+    Process: check matrix dimensions against the FAM, symmetry within tolerance, row/column identity agreement, finiteness of all entries, and positive semi-definiteness within the eigenvalue tolerance.
+    Output: 06.kinship/kinship_validation.json.
+    """
     input:
         matrix=f"06.kinship/{_K_MATRIX}",
         matrix_ids="06.kinship/sample_order.tsv",

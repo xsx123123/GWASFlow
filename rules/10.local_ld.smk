@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 10.local_ld.smk: 局部区域 LD（每性状；空 loci 合法跳过）
+# GWASFlow - 10.local_ld.smk: Regional pairwise LD (per trait; empty loci skip legally)
 
 _LD_PARAMS = config["parameter"]["local_ld"]
 
 
 rule regional_ld:
-    """每 locus 成对 LD（该性状有效材料；工具过滤审计记录）。"""
+    """Regional pairwise LD per locus (on the trait's effective samples; tool filter values audited).
+
+    Input: cohort trio + 05.phenotype/{trait}/keep.tsv + 09.loci/{trait}/loci.tsv.
+    Process: for each locus region, run plink2 --r2-unphased (or --r2-phased cols=+dprimeabs for the dprime metric) restricted to the region on the trait's keep set; the tool's own --maf/--geno filter values are audited; per-locus tool failures are recorded in the status file (transparent passthrough, never silently dropped).
+    Output: 10.local_ld/{trait}/regional_ld.tsv + regional_ld_status.tsv + ld_index.json.
+    """
     input:
         bed="03.genotype_qc/cohort.bed",
         bim="03.genotype_qc/cohort.bim",

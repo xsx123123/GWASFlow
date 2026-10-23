@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 11.candidate_genes.smk: 候选基因注释（每性状）
+# GWASFlow - 11.candidate_genes.smk: Candidate gene annotation (per trait)
 
 _CAND_PARAMS = config["parameter"]["candidate"]
 _REFERENCE = config.get("GWAS_reference", {}).get(str(config.get("Genome_Version", "")).strip(), {})
 
 
 rule annotate_genes:
-    """GFF3 gene 区间相交 + 功能表连接（一基因多行先汇总）。"""
+    """Candidate gene annotation: GFF3 interval intersection + function table join (multi-row genes aggregated first).
+
+    Input: 09.loci/{trait}/loci.tsv + reference GFF3 (+ optional function table).
+    Process: intersect locus regions with gene features from the GFF3 (with configurable flank); join gene descriptions from the function table, aggregating multi-row entries before the join.
+    Output: 11.candidates/{trait}/candidates.tsv + candidates.tsv.meta.json.
+    """
     input:
         loci="09.loci/{trait}/loci.tsv",
         gff3=(_REFERENCE.get("gff3") or []),

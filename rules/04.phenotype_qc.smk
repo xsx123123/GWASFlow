@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 04.phenotype_qc.smk: 性状级输入准备（每性状独立并行）
+# GWASFlow - 04.phenotype_qc.smk: Per-trait input preparation (traits run independently in parallel)
 #
-# 参数全部由 traits.tsv 单点派生（spec §6.3-9，禁止多处重复维护）。
-# n_pcs>0 且 population_structure 启用时进 PCA 输入；n_pcs=0 不要求文件存在。
+# All parameters derive from traits.tsv as the single source (spec §6.3-9; no duplicated maintenance).
+# PCA scores enter the input when n_pcs>0 and population_structure is enabled; n_pcs=0 never requires the file to exist.
 
 _QC_MIN_SAMPLES = config["parameter"]["qc"].get("min_samples_after_qc", 20)
 
@@ -22,7 +22,7 @@ def _needs_pcs_input(wildcards):
 
 
 def _needs_skip_pcs(wildcards):
-    """only_qc 截断下 n_pcs>0 的性状降级跳过 PC（D3，记录 pc_skipped）。"""
+    """Under only_qc truncation, traits with n_pcs>0 degrade to skipping PCs (D3; pc_skipped is recorded)."""
     return (
         TRAITS[wildcards.trait]["n_pcs"] > 0
         and not MODULE_STATUS["population_structure"].enabled
@@ -30,7 +30,12 @@ def _needs_skip_pcs(wildcards):
 
 
 rule prepare_trait:
-    """每性状输入准备：FAM 顺序权威对齐 + 全矩阵缺失掩码 + 八件产物。"""
+    """Per-trait input preparation: FAM-order authoritative alignment + full-matrix missingness masking + eight artifacts.
+
+    Input: cohort.fam (authoritative sample order), samples.csv, phenotypes table, optional covariates table and PCA scores.
+    Process: align trait samples to the cohort FAM order; apply the configured phenotype transform; build the GEMMA phenotype and covariate matrices (intercept + covariates + requested PCs); mask missing phenotype/genotype entries across the full matrix; enforce the min-samples floor; record pc_skipped when PCs are unavailable under only_qc.
+    Output: 05.phenotype/{trait}/ eight artifacts (phenotype.gemma.txt, covariates.gemma.txt, kinship_all.pheno.txt, keep.tsv, sample_inclusion.tsv, sample_order.tsv, design_columns.tsv, metadata.json).
+    """
     input:
         gate="01.gate/input_gate.json",
         fam="03.genotype_qc/cohort.fam",

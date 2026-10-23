@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 03.genotype_qc.smk: 分阶段基因型 QC（四阶段独立执行）
+# GWASFlow - 03.genotype_qc.smk: Staged genotype QC (four independent stages)
 #
-# cohort 三件套的 FAM 顺序成为后续全流程唯一对齐权威。
+# The FAM order of the cohort trio becomes the single alignment authority for the whole downstream pipeline.
 
 _QC_PARAMS = config["parameter"]["qc"]
 
 
 rule genotype_qc:
-    """四阶段 QC：pre_geno → mind → geno/maf/mac → final_stats（独立 PLINK2 调用）。"""
+    """Four-stage genotype QC: pre_geno -> mind -> geno/maf/mac -> final_stats (independent PLINK2 calls).
+
+    Input: 02.genotype/raw_engine.{bed,bim,fam} + gate artifact.
+    Process: stage1 removes variants by pre-geno missingness; stage2 removes samples by --mind; stage3 filters variants by --geno/--maf/--mac; a hard block fires when remaining samples drop below min_samples_after_qc or the marker set becomes empty; each stage's removed sample/variant sets are recorded for reconciliation.
+    Output: 03.genotype_qc/cohort.{bed,bim,fam} + per-stage stats + removed_*.tsv sets + final_stats.{tsv,json} + qc_audit.json.
+    """
     input:
         bed="02.genotype/raw_engine.bed",
         bim="02.genotype/raw_engine.bim",

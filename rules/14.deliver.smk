@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 14.deliver.smk: 复制交付（manifest 三件套）
+# GWASFlow - 14.deliver.smk: Copy delivery (manifest trio)
 #
-# input 复用 snakefile 层 ALL_TARGETS（唯一调用点约束，框架规范 §5.6-2）；
-# 交付基于 artifact_index 显式集合（禁止递归 glob）；默认 copy 可独立移动。
+# input reuses the snakefile-level ALL_TARGETS (single-call-site constraint, framework spec §5.6-2);
+# delivery is based on the explicit artifact_index set (recursive globbing forbidden); the default copy mode stays independently movable.
 
 rule deliver_results:
-    """按显式 artifact_index 复制交付 + 逐文件 MD5 + manifest 三件套。"""
+    """Copy delivery by the explicit artifact_index + per-file MD5 + manifest trio.
+
+    Input: artifact_index.tsv + project_summary.json (+ all analysis/summary targets via ALL_TARGETS).
+    Process: copy each artifact listed in the explicit index into the delivery tree; compute per-file MD5; write the delivery manifest trio; mirror the delivery directory to the external deliver root when configured.
+    Output: 14.data_deliver/delivery_manifest.json + delivery_manifest.md5 + delivery_details.log (+ analysis_results/ tree).
+    """
     input:
         analysis=lambda wc: list(ALL_TARGETS.plan_analysis),
         summary=lambda wc: list(ALL_TARGETS.plan_summary),
@@ -42,7 +47,7 @@ rule deliver_results:
             --mode copy \
             --threads {params.threads} \
             --out-dir {params.out_dir:q} > {log:q} 2>&1
-        # 外部交付根目录镜像（可选；保持交付目录可独立移动语义）
+        # Mirror to the external delivery root (optional; keeps the delivery tree independently movable)
         if [ -d "{params.out_dir:q}" ] && [ -n "{params.deliver_root:q}" ] && [ "{params.deliver_root:q}" != "{params.out_dir:q}" ]; then
             mkdir -p "{params.deliver_root:q}"
             cp -R "{params.out_dir:q}/." "{params.deliver_root:q}/" >> {log:q} 2>&1 || true

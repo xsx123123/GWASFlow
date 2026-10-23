@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 07.association.smk: 性状级 MAC + GEMMA LMM（每性状，D5）
+# GWASFlow - 07.association.smk: Per-trait MAC + GEMMA LMM (per trait, D5)
 #
-# 性状间无相互依赖边（{trait} wildcard 独立展开，spec §4.1-1）。
-# GEMMA bfile 用 cohort 全集（D10：与独立对照命令同参数可比）。
-# 规则 log 与 GEMMA 自身 --log-file 不同路径。
+# No cross-trait dependency edges ({trait} wildcard expands independently, spec §4.1-1).
+# GEMMA uses the full cohort bfile (D10: comparable with independent reference commands at identical parameters).
+# Rule logs stay separate from GEMMA's own --log-file.
 
 _ASSOC_PARAMS = config["parameter"]["association"]
 _KINSHIP_PARAMS = config["parameter"]["kinship"]
@@ -33,7 +33,12 @@ for _f in _assoc_output_files(_ASSOC_PARAMS.get("primary_test", "wald")):
 
 
 rule trait_mac:
-    """该性状有效材料上的精确 MAC（plink2 --keep --freq，D4）。"""
+    """Exact MAC on the trait's effective samples (plink2 --keep --freq, D4).
+
+    Input: 03.genotype_qc/cohort.{bed,bim,fam} + 05.phenotype/{trait}/keep.tsv + gate artifact.
+    Process: run plink2 --keep <keep.tsv> --freq on the cohort to obtain exact allele counts, then compute per-variant minor allele counts restricted to the trait's effective samples.
+    Output: 07.association/{trait}/trait_mac.tsv + trait_mac_summary.json.
+    """
     input:
         bed="03.genotype_qc/cohort.bed",
         bim="03.genotype_qc/cohort.bim",
@@ -76,7 +81,12 @@ rule trait_mac:
 
 
 rule run_gemma:
-    """GEMMA LMM 关联分析（每性状独立；命令数组构建 + run_metadata 五类绑定）。"""
+    """GEMMA LMM association test (per trait; command-array construction + run_metadata five-way binding).
+
+    Input: cohort trio + trait GEMMA phenotype/covariates + trait metadata/sample order + kinship matrix/order/validation + trait MAC + gate artifact.
+    Process: the wrapper script builds the GEMMA command (-lmm <test>, -c covariates, -k K, explicit -maf/-miss/-hwe/-r2) and binds five artifact classes (inputs, trait, kinship, assoc, binary) into run_metadata.json; --keep-going lets GEMMA finish despite per-variant failures.
+    Output: 07.association/{trait}/association.assoc.txt (+ .lrt/.score when test=all) + association.log.txt + gemma.help.txt + run_metadata.json.
+    """
     input:
         bed="03.genotype_qc/cohort.bed",
         bim="03.genotype_qc/cohort.bim",

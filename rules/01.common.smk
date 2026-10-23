@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# GWASFlow - 01.common.smk: 公共导入 + logger 三级降级链（无业务 rule）
+# GWASFlow - 01.common.smk: Common imports + 3-level logger fallback chain (no business rules)
 #
-# 契约：
-# - 日志三级降级链: rich-loguru 插件 -> loguru -> stdlib logging（D9）
-# - 禁止顶层裸 import 插件（try/except fallback 为开发兜底）
-# - logs/<NN>.<module>/ 编号目录约定在本文件定型
-# - 生产环境必须安装 snakemake-logger-plugin-rich-loguru（M5 降级说明见 README）
+# Contracts:
+# - Logger 3-level fallback chain: rich-loguru plugin -> loguru -> stdlib logging (D9)
+# - No top-level bare plugin imports (try/except fallback is a development safety net)
+# - The logs/<NN>.<module>/ numbered-directory convention is established in this file
+# - Production environments must install snakemake-logger-plugin-rich-loguru (M5 fallback note in README)
 
 import os
 
-# ---- Logger 三级降级链 ----
+# ---- Logger 3-level fallback chain ----
 try:
     from snakemake_logger_plugin_rich_loguru import get_analysis_logger
     logger = get_analysis_logger()
@@ -20,8 +20,8 @@ except ImportError:
         from loguru import logger
         LOGGER_TYPE = "standard loguru"
         logger.warning(
-            "rich-loguru 插件未安装，降级到标准 loguru。"
-            "生产环境必须安装 snakemake-logger-plugin-rich-loguru。"
+            "rich-loguru plugin not installed, falling back to standard loguru. "
+            "Production environments must install snakemake-logger-plugin-rich-loguru."
         )
     except ImportError:
         import logging
@@ -32,13 +32,13 @@ except ImportError:
         logger = logging.getLogger("GWASFlow")
         LOGGER_TYPE = "stdlib logging"
         logger.warning(
-            "rich-loguru 插件与 loguru 均未安装，降级到标准库 logging。"
-            "生产环境必须安装 snakemake-logger-plugin-rich-loguru。"
+            "Neither the rich-loguru plugin nor loguru is installed, falling back to stdlib logging. "
+            "Production environments must install snakemake-logger-plugin-rich-loguru."
         )
 
 logger.info(f"GWASFlow logger initialized ({LOGGER_TYPE})")
 
-# ---- 公共工具导入（供后续规则文件复用） ----
+# ---- Common utility imports (reused by subsequent rule files) ----
 from rules.utils.tools import (
     build_command,
     thread_env,
